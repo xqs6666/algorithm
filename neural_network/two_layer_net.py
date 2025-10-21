@@ -2,30 +2,6 @@ import numpy as np
 from torchvision import datasets
 from torch.utils.data import DataLoader
 
-def numerical_gradient(f, x):
-    
-    h = 1e-4 # 0.0001
-    grad = np.zeros_like(x) # 生成和x形状相同的数组
-
-    it = np.nditer(x,flags=["multi_index"],op_flags=["readwrite"])
-    while not it.finished:
-        idx = it.multi_index
-        tmp_val = x[idx]
-
-        # f(x+h)的计算
-        x[idx] = tmp_val + h
-        fxh1 = f(x)
-
-        # f(x-h)的计算
-        x[idx] = tmp_val - h
-        fxh2 = f(x)
-
-        grad[idx] = (fxh1 - fxh2) / (2*h)
-        x[idx] = tmp_val # 还原值
-
-        it.iternext()
-    return grad
-
 class TwoLayerNet:
 
     def __init__(self,input_size,hidden_size,output_size,weight_init_std=0.01):
@@ -41,7 +17,7 @@ class TwoLayerNet:
     
     def softmax(self,x):
         if x.ndim==2:
-            c = np.max(x,axis=1,keepdims=True)
+            c = np.max(x, axis=1, keepdims=True)
             exp_a_n = np.exp(x-c)
             exp_a_sum = np.sum(exp_a_n)
             return exp_a_n/exp_a_sum
@@ -115,16 +91,24 @@ class TwoLayerNet:
         grads['b2'] = self.__numerical_gradient(loss_W, self.param['b2'])
         return grads
 
-dataset_train = datasets.MNIST(root='./data', download=True,train=True)
-x_train, t_train = dataset_train.data.numpy(), dataset_train.targets.numpy()
+dataset_train_0 = datasets.MNIST(root='./data', download=True,train=True)
+x_train, t_train = dataset_train_0.data.numpy(), dataset_train_0.targets.numpy()
 x_train = x_train.reshape(60000,28*28)
 
-train_loss_list = []
+dataset_train_1 = datasets.MNIST(root='./data', download=True,train=False)
+x_test, t_test = dataset_train_1.data.numpy(), dataset_train_1.targets.numpy()
+x_test = x_train.reshape(10000,28*28)
 
-iters_num = 10
 train_size = x_train.shape[0]
-batch_size = 1
+iters_num = 10000
+batch_size = 100
 learning_rate = 0.1
+
+train_loss_list = []
+train_acc_list = []
+test_acc_list = []
+iter_per_epoch = max(train_size/batch_size,1)
+
 
 network = TwoLayerNet(input_size=784,hidden_size=50,output_size=10)
 
@@ -140,5 +124,16 @@ for i in range(iters_num):
 
     loss = network.loss(x_batch,t_batch)
     train_loss_list.append(loss) 
+    # 计算每个epoch的识别精度
+    if i % iter_per_epoch == 0:
+        train_acc = network.accuracy(x_batch,t_batch)
+        test_acc = network.accuracy(x_test,t_test)
+        train_acc_list.append(train_acc)
+        test_acc_list.append(test_acc)
+        print("train acc, test acc | " + str(train_acc) + ", " + str(test_acc))
 
-print(train_loss_list)
+'''
+当前的numerical_gradient方法无法正确计算梯度，因为损失函数没有正确绑定参数更新。
+通过为每个参数创建独立的、能够临时修改该参数的损失函数，可以修复这个问题。
+但需要注意的是，数值梯度法计算成本很高，对于实际训练建议使用反向传播算法。
+'''
