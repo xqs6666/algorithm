@@ -42,7 +42,7 @@ class DigitalModel:
         return x_train, x_label
 
     def sigmoid(self,x):
-        return 1/ (1+np.exp(-x))
+        return 1/(1+np.exp(-x))
     
     def softmax(self,x):
         c = np.max(x)
@@ -72,76 +72,6 @@ class DigitalModel:
         z2 = self.sigmoid(a2)
 
         a3 = np.dot(z2,W3)+b3
-        y = self.softmax(a3)
-        return y
-
-dm = DigitalModel()
-x_train, x_label = dm.get_data()
-print(len(x_train))
-
-accuracy_count = 0
-# for idx, data in enumerate(x_train):
-#     y = dm.predict(data)
-#     print(np.sum(y))
-#     p = np.argmax(y)
-#     if p == x_label[idx]:
-#         accuracy_count+=1
-
-# print(str(float(accuracy_count)/len(x_train)))
-
-
-
-
-class DigitalModel:
-    def __init__(self):
-        self.network = self.init_network()  # ✅ 初始化一次，多次使用
-    
-    def get_data(self):
-        dataset_train = datasets.MNIST(root='./data', download=True, train=True)
-        x_train = dataset_train.data.numpy().astype(np.float32)
-        x_label = dataset_train.targets.numpy()
-        
-        # ✅ 数据归一化到 [0, 1]
-        x_train = x_train.reshape(60000, 28*28) / 255.0
-        return x_train, x_label
-    
-    def sigmoid(self, x):
-        # ✅ 数值稳定性处理
-        x = np.clip(x, -500, 500)  # 防止指数溢出
-        return 1 / (1 + np.exp(-x))
-    
-    def softmax(self, x):
-        # ✅ 你的实现已经是正确的
-        c = np.max(x, axis=-1, keepdims=True)
-        exp_a = np.exp(x - c)
-        return exp_a / np.sum(exp_a, axis=-1, keepdims=True)
-    
-    def init_network(self):
-        network = {}
-        # ✅ 改进的权重初始化（Xavier/Glorot初始化）
-        network["W1"] = np.random.randn(784, 50) * np.sqrt(1.0 / 784)
-        network["b1"] = np.zeros(50)  # ✅ 偏置初始为0
-        
-        network["W2"] = np.random.randn(50, 100) * np.sqrt(1.0 / 50)
-        network["b2"] = np.zeros(100)
-        
-        network["W3"] = np.random.randn(100, 10) * np.sqrt(1.0 / 100)
-        network["b3"] = np.zeros(10)
-        return network
-    
-    def predict(self, x):
-        # ✅ 使用已经初始化好的网络权重
-        W1, W2, W3 = self.network["W1"], self.network["W2"], self.network["W3"]
-        b1, b2, b3 = self.network["b1"], self.network["b2"], self.network["b3"]
-        
-        # 前向传播
-        a1 = np.dot(x, W1) + b1
-        z1 = self.sigmoid(a1)
-        
-        a2 = np.dot(z1, W2) + b2
-        z2 = self.sigmoid(a2)
-        
-        a3 = np.dot(z2, W3) + b3
         y = self.softmax(a3)
         return y
 
