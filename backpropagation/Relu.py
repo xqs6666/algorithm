@@ -21,6 +21,8 @@ class Relu:
     dout: 上游传来的梯度
     """    
     def backward(self,dout):
+        # dout 必须与 forward 的输出形状相同
+        # 也就是与输入x的形状相同
         dout[self.mask] = 0
         dx = dout
         return dx
