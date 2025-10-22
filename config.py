@@ -23,4 +23,4 @@ t = np.array([1,1,1])
 print(y==t)
 print(np.sum(np.array([ True,True,True]))) #3
 
-print(1%100)
+print(6%600)
