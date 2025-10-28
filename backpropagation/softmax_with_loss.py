@@ -8,9 +8,9 @@ class SoftmaxWithLoss:
         pass
 
     def softmax(self,x):
-        np_max = np.max(x)
+        np_max = np.max(x,axis=1,keepdims=True)
         np_x = np.exp(x-np_max)
-        return np_x/np.sum(np_x)
+        return np_x/np.sum(np_x,axis=1,keepdims=True)
     
     def cross_entropy_error(self,y,t):
         if y.ndim ==1:
@@ -29,5 +29,5 @@ class SoftmaxWithLoss:
     
     def backward(self,dout=1):
         batch_size = self.t.shape[0]
-        dx = (self.y - self.t) / batch_size
+        dx = (self.y - self.t) * dout / batch_size
         return dx
