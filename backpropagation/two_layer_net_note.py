@@ -236,6 +236,20 @@ class Momentum:
             self.v[key] = self.momentum * self.v[key] - self.learning*grad[key]
             parames[key] +=  self.v[key]
 
+class AdaGradient:
+    def __init__(self,learning=0.1):
+        self.learning=learning
+        self.r = {}
+        pass
+
+    def update(self,params,grads):
+        if not self.r:
+            for key,val in params.items():
+                self.r[key] = np.zeros_like(val)
+        for key,val in params.items():
+            self.r[key] += grads[key]*grads[key]
+            params[key] -= self.learning/(np.sqrt(self.r[key])+1e-7) * grads[key]
+
 def build_data():
     """
     加载 MNIST 数据并做预处理：
@@ -287,7 +301,8 @@ test_acc_list = []
 iter_per_epoch = max(train_size // batch_size, 1) #600 
 
 # optimizer = SGD()
-optimizer = Momentum()
+# optimizer = Momentum()
+optimizer = AdaGradient()
 
 for i in range(iters_num):
     # 随机采样一个迷你批
